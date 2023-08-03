@@ -3,7 +3,8 @@ import { Contract, providers, utils } from "ethers";
 import React, { useEffect, useRef, useState } from "react";
 import Web3Modal from "web3modal";
 import { UID_CONTRACT_ADDRESS,abi,UID_VERIFY_ADDRESS,abi_verify } from "../constants";
-import Auth from "../components/Auth"
+import Auth from "../components/Auth";
+import axios from 'axios';
 function Uid() {
   const [walletConnected, setWalletConnected] = useState(false);  
   const [id,setId] = useState("");
@@ -11,6 +12,10 @@ function Uid() {
   const [verify, setVerify] = useState(false);
   const [token, setToken] = useState(false);
   const [address, setAddress] = useState("");
+  const [status, setStatus] = useState("");
+  const [loading,setLoading]=useState(false);
+  const walletAddressRef = useRef();
+  const verifyRef=useRef();
   const web3ModalRef = useRef();
 
 
@@ -36,14 +41,41 @@ function Uid() {
       console.error(e);
     }
   }
-  const isVerified = ()=>{
-    if (localStorage.getItem('login') === null) {
-      setVerify(false);
+  const isVerified = async () => {
+  const options = {
+  method: 'POST',
+  headers: {'content-type': 'application/json', 'x-api-key': 'H2TBrj7G0SzqNv+'},
+  body: JSON.stringify({method: 'get'})
+};
+fetch('https://api.nexaflow.xyz/api/cors/64ca405317ad72c7fc3d88fb', options)
+  .then(response => response.json())
+  .then(response => {
+    console.log(response.data);
+    for (let i = 0; i < response.data.length; i++){
+      const refId = (response.data[i].attributes['reference-id']);
+      const status = response.data[i].attributes['status'];
+      
+      console.log(refId, status);
+      if (refId == walletAddressRef.current) {
+        if (status === 'created')
+        continue;
+        if (status === 'approved') {
+          verifyRef.current = true;
+          setStatus(status);
+        }
+        else {
+          verifyRef.current=false;
+          setStatus(status);
+        }
+      }
+      else {
+        setVerify(false);
+      }
     }
-    else {
-      setVerify(true);
-    }
+  })
+  .catch(err => console.error(err));
   }
+
   const hasToken=async() => {
  try{const signer = await getProviderOrSigner(true);
     const contract = new Contract(UID_CONTRACT_ADDRESS, abi, signer);
@@ -52,7 +84,6 @@ function Uid() {
    console.log(token, "===Token");
  } catch (e) { console.error(e) }
   }
-
     const connectWallet = async () => {
     try {
       // Get the provider from web3Modal, wh  ich in our case is MetaMask
@@ -62,23 +93,23 @@ function Uid() {
     } catch (err) {
       console.error(err);
     }
+      setLoading(false)
   };
 const getProviderOrSigner = async (needSigner = false) => {
     // Connect to Metamask
     // Since we store `web3Modal` as a reference, we need to access the `current` value to get access to the underlying object
   try{  const provider = await web3ModalRef.current.connect();
     const web3Provider = new providers.Web3Provider(provider);
-
     // If user is not connected to the Goerli network, let them know and throw an error
     const { chainId } = await web3Provider.getNetwork();
     if (chainId !== 80001) {
-      window.alert("Change the network to Binance");
-      throw new Error("Change network to Binance");
+      window.alert("Change the network to Polygon");
+      throw new Error("Change network to Polygon");
     }
   
-
-  if (needSigner) {
       const signer = web3Provider.getSigner();
+    walletAddressRef.current=(await signer.getAddress());
+    if (needSigner) {
       return signer;
     }
     return web3Provider;
@@ -88,6 +119,8 @@ const getProviderOrSigner = async (needSigner = false) => {
     console.log('------------------------------------');
     }
 };
+  
+
   
   
 
@@ -106,10 +139,11 @@ const getProviderOrSigner = async (needSigner = false) => {
         network: "goerli",
         providerOptions: {},
         disableInjectedProvider: false,
-      });
+            });
+      setLoading(true);
       connectWallet();
-      hasToken();
       isVerified();
+      hasToken();
       // getRewards();
       // getFixedAPY();
 
@@ -123,12 +157,14 @@ const getProviderOrSigner = async (needSigner = false) => {
 
 
   return (
+
     <div className="container">
-      {
-        token?<h2>Verified and Soulbound Token Minted</h2>:verify?<button onClick={mintToken}>mint token</button>:<Auth></Auth>
+     
+      <div class="left-side">
+         {
+        loading ? "loading..." : verifyRef.current ? token ? <h4>Verified Soulbound Token Minted</h4> : <button onClick={mintToken}>mint token</button> : <Auth value={walletAddressRef}></Auth>
       }
-      
-       <div class="left-side">
+        <h4><b>Verification Status:</b> {status}</h4>
     <div class="details">
          
        

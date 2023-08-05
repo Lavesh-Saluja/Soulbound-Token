@@ -2,7 +2,7 @@ import './uid.css';
 import { Contract, providers, utils } from "ethers";
 import React, { useEffect, useRef, useState } from "react";
 import Web3Modal from "web3modal";
-import { UID_CONTRACT_ADDRESS,abi,UID_VERIFY_ADDRESS,abi_verify } from "../constants";
+import { UID_CONTRACT_ADDRESS,abi } from "../constants";
 import Auth from "../components/Auth";
 import axios from 'axios';
 function Uid() {
@@ -161,9 +161,10 @@ const getProviderOrSigner = async (needSigner = false) => {
     <div className="container">
      
       <div class="left-side">
-         {
-        loading ? "loading..." : verifyRef.current ? token ? <h4>Verified Soulbound Token Minted</h4> : <button onClick={mintToken}>mint token</button> : <Auth value={walletAddressRef}></Auth>
-      }
+        {
+          loading?"loading":token?<h4>Verified Soulbound Token Minted</h4>:verifyRef.current?<button onClick={mintToken}>mint token</button>:<Auth value={walletAddressRef}></Auth>
+        }
+      
         <h4><b>Verification Status:</b> {status}</h4>
     <div class="details">
          

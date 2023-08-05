@@ -1,13 +1,11 @@
-// Try using this as URI ipfs://bafkreic6ov4qo4ucd4g4uuyve4h72nc4y2lg7ugtq3n3vxnfp3lojvtmdu
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
-
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol"; 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract SoulBound is  ERC721URIStorage {
+contract SoulBound is  ERC721URIStorage{
     address public owner;
     using Counters for Counters.Counter;
 
@@ -16,9 +14,10 @@ contract SoulBound is  ERC721URIStorage {
     mapping(address => bool) public tokenMintedAddress;//address which have already minted token 
     event Attest(address indexed to, uint256 indexed tokenId);
     event Revoke(address indexed to, uint256 indexed tokenId);
-
-    constructor() ERC721("SoulBound Token", "SBT") {
+    IERC20 token;
+    constructor(address tokenAddress) ERC721("SoulBound Token", "SBT") {
         owner=msg.sender;
+     token = IERC20(tokenAddress);
     }
     function addToWhiteList(address _add)public onlyOwner{
         require(!whitelistedAddresses[_add], "Sender has already been whitelisted");
@@ -32,7 +31,12 @@ contract SoulBound is  ERC721URIStorage {
         require(whitelistedAddresses[msg.sender],"Could not mint the token");
         _;
     }
-    function safeMint(string memory uri) public onlyWhitelistedUser {
+    modifier hasERC20Token(){
+        uint balance=token.balanceOf(msg.sender);
+        require(balance>0,"Not Enough STK tokens");
+        _;
+    }
+    function safeMint(string memory uri) public onlyWhitelistedUser hasERC20Token {
          whitelistedAddresses[msg.sender]=false;
          tokenMintedAddress[msg.sender]=true;
         uint256 tokenId = _tokenIdCounter.current();

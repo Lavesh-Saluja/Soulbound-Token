@@ -1,7 +1,13 @@
-export const UID_CONTRACT_ADDRESS = "0x22e2Afc61bf3B53Cb44a6EF12c70eb5649aaAcc4";
-export const abi =[
+export const UID_CONTRACT_ADDRESS = "0x7bC303c4D4CB493D650a14C3C347BC810482C302";
+export const abi = [
     {
-      "inputs": [],
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "tokenAddress",
+          "type": "address"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "constructor"
     },
@@ -522,4 +528,3 @@ export const abi =[
       "type": "function"
     }
   ];
-

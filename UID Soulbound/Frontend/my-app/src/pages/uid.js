@@ -35,7 +35,7 @@ function Uid() {
     try {
       const signer = await getProviderOrSigner(true);
       const contract = new Contract(UID_CONTRACT_ADDRESS, abi, signer);
-      const tx = await contract.safeMint("");
+      const tx = await contract.safeMint();
       await tx.wait();
     } catch (e) {
       console.error(e);

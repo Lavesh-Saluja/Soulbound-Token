@@ -1,11 +1,16 @@
-export const UID_CONTRACT_ADDRESS = "0x7bC303c4D4CB493D650a14C3C347BC810482C302";
-export const abi = [
+export const UID_CONTRACT_ADDRESS = "0xf586A6F38C49E2772Ce0a36b003C4648B824Ad58";
+export const abi =  [
     {
       "inputs": [
         {
           "internalType": "address",
           "name": "tokenAddress",
           "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "_uri",
+          "type": "string"
         }
       ],
       "stateMutability": "nonpayable",
@@ -334,13 +339,7 @@ export const abi = [
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "string",
-          "name": "uri",
-          "type": "string"
-        }
-      ],
+      "inputs": [],
       "name": "safeMint",
       "outputs": [],
       "stateMutability": "nonpayable",
@@ -506,6 +505,19 @@ export const abi = [
       "name": "transferFrom",
       "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "uri",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {

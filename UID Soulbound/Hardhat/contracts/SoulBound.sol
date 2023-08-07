@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract SoulBound is  ERC721URIStorage{
+    string public uri;
     address public owner;
     using Counters for Counters.Counter;
 
@@ -15,9 +16,10 @@ contract SoulBound is  ERC721URIStorage{
     event Attest(address indexed to, uint256 indexed tokenId);
     event Revoke(address indexed to, uint256 indexed tokenId);
     IERC20 token;
-    constructor(address tokenAddress) ERC721("SoulBound Token", "SBT") {
+    constructor(address tokenAddress,string memory _uri) ERC721("SoulBound Token", "SBT") {
         owner=msg.sender;
      token = IERC20(tokenAddress);
+     uri=_uri;
     }
     function addToWhiteList(address _add)public onlyOwner{
         require(!whitelistedAddresses[_add], "Sender has already been whitelisted");
@@ -36,7 +38,7 @@ contract SoulBound is  ERC721URIStorage{
         require(balance>0,"Not Enough STK tokens");
         _;
     }
-    function safeMint(string memory uri) public onlyWhitelistedUser hasERC20Token {
+    function safeMint() public onlyWhitelistedUser hasERC20Token {
          whitelistedAddresses[msg.sender]=false;
          tokenMintedAddress[msg.sender]=true;
         uint256 tokenId = _tokenIdCounter.current();

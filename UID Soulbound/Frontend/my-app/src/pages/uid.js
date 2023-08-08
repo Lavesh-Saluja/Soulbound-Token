@@ -2,7 +2,7 @@ import './uid.css';
 import { Contract, providers, utils } from "ethers";
 import React, { useEffect, useRef, useState } from "react";
 import Web3Modal from "web3modal";
-import { UID_CONTRACT_ADDRESS,abi } from "../constants";
+import { UID_CONTRACT_ADDRESS,abi,TOKEN_CONTRACT_ADDRESS,abiToken } from "../constants";
 import Auth from "../components/Auth";
 import axios from 'axios';
 function Uid() {
@@ -17,10 +17,41 @@ function Uid() {
   const walletAddressRef = useRef();
   const verifyRef=useRef();
   const web3ModalRef = useRef();
+  const signatureRef = useRef();
+  
+  // async function mintERC20Tokens() {
+  // try{  const signer = await getProviderOrSigner(true);
+  //   const contract = new Contract(TOKEN_CONTRACT_ADDRESS, abiToken, signer);
+  //  const tx= await contract.mint();
+  //   await tx.wait();
+  //   window.alert("Tokens minted");
+  // } catch (e) {
+  //   console.error(e);
+  // }
+
+  // }
+
+  async function signData() {
+    if(signatureRef.current===undefined){
+    try{const signer = await getProviderOrSigner(true);
+  const message = utils.solidityKeccak256(['string'], ["Verifying The Signature"]);
+
+      // Sign the data
+      
+    const signature = await signer.signMessage(utils.arrayify(message));
+    signatureRef.current = signature;
+    console.log('------------------------------------');
+    console.log("Signature",signatureRef.current);
+      console.log('------------------------------------');
+    } catch (e) {
+      console.error(e)
+    }}
+}
 
 
   const whitelistAddress = async () => {
-    try{ const signer = await getProviderOrSigner(true);
+    try {
+      const signer = await getProviderOrSigner(true);
     const contract = new Contract(UID_CONTRACT_ADDRESS, abi, signer);
     const tx = await contract.addToWhiteList(address);
       await tx.wait();
@@ -88,8 +119,9 @@ fetch('https://api.nexaflow.xyz/api/cors/64ca405317ad72c7fc3d88fb', options)
     try {
       // Get the provider from web3Modal, wh  ich in our case is MetaMask
       // When used for the first time, it prompts the user to connect their wallet
-      await getProviderOrSigner();
+      await signData();
       setWalletConnected(true);
+      
     } catch (err) {
       console.error(err);
     }
@@ -100,6 +132,7 @@ const getProviderOrSigner = async (needSigner = false) => {
     // Since we store `web3Modal` as a reference, we need to access the `current` value to get access to the underlying object
   try{  const provider = await web3ModalRef.current.connect();
     const web3Provider = new providers.Web3Provider(provider);
+    
     // If user is not connected to the Goerli network, let them know and throw an error
     const { chainId } = await web3Provider.getNetwork();
     if (chainId !== 80001) {
@@ -141,7 +174,7 @@ const getProviderOrSigner = async (needSigner = false) => {
         disableInjectedProvider: false,
             });
       setLoading(true);
-      connectWallet();
+      connectWallet()
       isVerified();
       hasToken();
       // getRewards();
@@ -162,14 +195,10 @@ const getProviderOrSigner = async (needSigner = false) => {
      
       <div class="left-side">
         {
-          loading?"loading":token?<h4>Verified Soulbound Token Minted</h4>:verifyRef.current?<button onClick={mintToken}>mint token</button>:<Auth value={walletAddressRef}></Auth>
+          loading?"loading":token?<h4 >Verified and Soulbound Token Minted</h4>:verifyRef.current?<button onClick={mintToken}>mint Soulbound token</button>:<Auth value={walletAddressRef}></Auth>
         }
-      
         <h4><b>Verification Status:</b> {status}</h4>
     <div class="details">
-         
-       
-    
         </div>
       
       </div>

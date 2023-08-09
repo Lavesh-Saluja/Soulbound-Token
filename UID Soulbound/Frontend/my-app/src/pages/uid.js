@@ -73,38 +73,49 @@ function Uid() {
     }
   }
   const isVerified = async () => {
-  const options = {
+
+    const options = {
   method: 'POST',
   headers: {'content-type': 'application/json', 'x-api-key': 'H2TBrj7G0SzqNv+'},
   body: JSON.stringify({method: 'get'})
 };
+
 fetch('https://api.nexaflow.xyz/api/cors/64ca405317ad72c7fc3d88fb', options)
   .then(response => response.json())
-  .then(response => {
-    console.log(response.data);
-    for (let i = 0; i < response.data.length; i++){
-      const refId = (response.data[i].attributes['reference-id']);
-      const status = response.data[i].attributes['status'];
-      
-      console.log(refId, status);
-      if (refId == walletAddressRef.current) {
-        if (status === 'created')
-        continue;
-        if (status === 'approved') {
-          verifyRef.current = true;
-          setStatus(status);
-        }
-        else {
-          verifyRef.current=false;
-          setStatus(status);
-        }
-      }
-      else {
-        setVerify(false);
-      }
-    }
-  })
+  .then(response => console.log(response.data))
   .catch(err => console.error(err));
+//   const options = {
+//   method: 'POST',
+//   headers: {'content-type': 'application/json', 'x-api-key': 'H2TBrj7G0SzqNv+'},
+//   body: JSON.stringify({method: 'get'})
+// };
+// fetch('https://api.nexaflow.xyz/api/cors/64ca405317ad72c7fc3d88fb', options)
+//   .then(response => response.json())
+//   .then(response => {
+//     console.log(response.data,"JJJJJJ");
+//     for (let i = 0; i < response.data.length; i++){
+//       const refId = (response.data[i].attributes['reference-id']);
+//       const status = response.data[i].attributes['status'];
+      
+//       console.log(refId, status);
+//       if (refId == walletAddressRef.current) {
+//         if (status === 'created')
+//         continue;
+//         if (status === 'approved') {
+//           verifyRef.current = true;
+//           setStatus(status);
+//         }
+//         else {
+//           verifyRef.current=false;
+//           setStatus(status);
+//         }
+//       }
+//       else {
+//         setVerify(false);
+//       }
+//     }
+//   })
+//   .catch(err => console.error(err));
   }
 
   const hasToken=async() => {

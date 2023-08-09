@@ -8,11 +8,10 @@ const Auth = (data) => {
     <div>
       <input placeholder="abc@xyz.com" onChange={(e)=>{setEmail(e.target.value)}}></input>
       <Persona.Inquiry
-        templateId='itmpl_fv6PDioHhzwTo4pH7K1HSMR4'
-        environmentId='env_Qsmaa92ng7mE8rxekimRP48p'
+        templateId='itmpl_LeEZ9mquzr861WGerXR4yshU'
+        environmentId='env_oHeLwXnBxzNS7qsLHeEtkBqv'
         referenceId={address.current}
        fields={{
-    nameFirst: "Lavesh",
     emailAddress: email
   }}
       onLoad={() => { console.log('Loaded inline'); }}

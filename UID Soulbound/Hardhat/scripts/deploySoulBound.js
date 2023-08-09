@@ -14,7 +14,7 @@ async function main() {
   const uri = "https://ipfs.io/ipfs/QmWiiXXcPp7MzGHouXZV4f1j5irfwq3BZrNjP8B253p8Zz/";
   const contract = await SupplyChainContract.deploy(tokenAddress,uri);
   await contract.deployed();
-    console.log("Contract Address", contract.address);//0xf586A6F38C49E2772Ce0a36b003C4648B824Ad58
+    console.log("Contract Address", contract.address);//0x2b434e1BA5feC41F0735eD97a1FBf5aBdfCF19CC
     console.log("Sleeping.....");
   // Wait for etherscan to notice that the contract has been deployed
   await sleep(40000);

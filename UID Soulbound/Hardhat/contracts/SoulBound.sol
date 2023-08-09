@@ -33,12 +33,12 @@ contract SoulBound is  ERC721URIStorage{
         require(whitelistedAddresses[msg.sender],"Could not mint the token");
         _;
     }
-    modifier hasERC20Token(){
-        uint balance=token.balanceOf(msg.sender);
-        require(balance>0,"Not Enough STK tokens");
-        _;
-    }
-    function safeMint() public onlyWhitelistedUser hasERC20Token {
+    // modifier hasERC20Token(){
+    //     uint balance=token.balanceOf(msg.sender);
+    //     require(balance>0,"Not Enough STK tokens");
+    //     _;
+    // }
+    function safeMint() public onlyWhitelistedUser  {
          whitelistedAddresses[msg.sender]=false;
          tokenMintedAddress[msg.sender]=true;
         uint256 tokenId = _tokenIdCounter.current();
@@ -79,6 +79,9 @@ contract SoulBound is  ERC721URIStorage{
     }
     function hasToken()public view returns (bool){
         return tokenMintedAddress[msg.sender];
+    }
+    function changeOwner(address _owner)public onlyOwner{
+        owner=_owner;
     }
 }
 

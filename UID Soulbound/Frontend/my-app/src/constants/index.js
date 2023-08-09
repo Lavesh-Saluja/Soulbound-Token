@@ -1,5 +1,5 @@
-export const UID_CONTRACT_ADDRESS = "0xf586A6F38C49E2772Ce0a36b003C4648B824Ad58";
-export const abi =  [
+export const UID_CONTRACT_ADDRESS = "0x2b434e1BA5feC41F0735eD97a1FBf5aBdfCF19CC";
+export const abi =   [
     {
       "inputs": [
         {
@@ -220,6 +220,19 @@ export const abi =  [
         }
       ],
       "name": "burn",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        }
+      ],
+      "name": "changeOwner",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -539,7 +552,7 @@ export const abi =  [
       "stateMutability": "view",
       "type": "function"
     }
-];
+  ];
 export const TOKEN_CONTRACT_ADDRESS = "0x1B9C02eBD8eb81464d2C262C5Dddd316c867BB0f";
 export const abiToken = [
     {

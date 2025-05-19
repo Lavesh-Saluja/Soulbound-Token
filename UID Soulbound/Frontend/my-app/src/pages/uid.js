@@ -1,221 +1,245 @@
 import './uid.css';
-import { Contract, providers, utils } from "ethers";
+import { Contract, providers } from "ethers";
 import React, { useEffect, useRef, useState } from "react";
 import Web3Modal from "web3modal";
-import { UID_CONTRACT_ADDRESS,abi,TOKEN_CONTRACT_ADDRESS,abiToken } from "../constants";
+import { UID_CONTRACT_ADDRESS, abi } from "../constants";
 import Auth from "../components/Auth";
-import axios from 'axios';
+import Navbar from '../components/Navbar';
 function Uid() {
-  const [walletConnected, setWalletConnected] = useState(false);  
-  const [id,setId] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
-  const [verify, setVerify] = useState(false);
-  const [token, setToken] = useState(false);
+  const [id, setId] = useState("");
   const [address, setAddress] = useState("");
-  const [status, setStatus] = useState("");
-  const [loading,setLoading]=useState(false);
-  const walletAddressRef = useRef();
-  const verifyRef=useRef();
-  const web3ModalRef = useRef();
-  const signatureRef = useRef();
+  const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("Connecting to wallet...");
+  const [walletConnected, setWalletConnected] = useState(false);
+  const [token, setToken] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   
-  // async function mintERC20Tokens() {
-  // try{  const signer = await getProviderOrSigner(true);
-  //   const contract = new Contract(TOKEN_CONTRACT_ADDRESS, abiToken, signer);
-  //  const tx= await contract.mint();
-  //   await tx.wait();
-  //   window.alert("Tokens minted");
-  // } catch (e) {
-  //   console.error(e);
-  // }
-
-  // }
-
-  async function signData() {
-    if(signatureRef.current===undefined){
-    try{const signer = await getProviderOrSigner(true);
-  const message = utils.solidityKeccak256(['string'], ["Verifying The Signature"]);
-
-      // Sign the data
-      
-    const signature = await signer.signMessage(utils.arrayify(message));
-    signatureRef.current = signature;
-    console.log('------------------------------------');
-    console.log("Signature",signatureRef.current);
-      console.log('------------------------------------');
-    } catch (e) {
-      console.error(e)
-    }}
-}
-
+  const walletAddressRef = useRef();
+  const verifyRef = useRef(false);
+  const web3ModalRef = useRef();
 
   const whitelistAddress = async () => {
-    try {
-      const signer = await getProviderOrSigner(true);
-    const contract = new Contract(UID_CONTRACT_ADDRESS, abi, signer);
-    const tx = await contract.addToWhiteList(address);
-      await tx.wait();
-      window.alert("Address Added to whitelist")
+    if (!address) {
+      showNotification("Please enter an address to whitelist", "error");
+      return;
     }
-    catch (e) {
-      console.error(e)
+    
+    try {
+      setLoadingMessage("Whitelisting address...");
+      setLoading(true);
+      
+      const signer = await getProviderOrSigner(true);
+      const contract = new Contract(UID_CONTRACT_ADDRESS, abi, signer);
+      const tx = await contract.addToWhiteList(address);
+      await tx.wait();
+      
+      showNotification("Address successfully whitelisted!", "success");
+      setAddress("");
+    } catch (e) {
+      console.error(e);
+      showNotification("Failed to whitelist address", "error");
+    } finally {
+      setLoading(false);
     }
   }
 
   const mintToken = async () => {
     try {
+      setLoadingMessage("Minting your token...");
+      setLoading(true);
+      
       const signer = await getProviderOrSigner(true);
       const contract = new Contract(UID_CONTRACT_ADDRESS, abi, signer);
       const tx = await contract.safeMint();
       await tx.wait();
+      
+      await hasToken();
+      showNotification("Soulbound token minted successfully!", "success");
     } catch (e) {
       console.error(e);
+      showNotification("Failed to mint token", "error");
+    } finally {
+      setLoading(false);
     }
-  }
-  const isVerified = async () => {
-  const options = {
-  method: 'POST',
-  headers: {'content-type': 'application/json', 'x-api-key': 'H2TBrj7G0SzqNv+'},
-  body: JSON.stringify({method: 'get'})
-};
-fetch('https://api.nexaflow.xyz/api/cors/64ca405317ad72c7fc3d88fb', options)
-  .then(response => response.json())
-  .then(response => {
-    console.log(response.data,"JJJJJJ");
-    for (let i = 0; i < response.data.length; i++){
-      const refId = (response.data[i].attributes['reference-id']);
-      const status = response.data[i].attributes['status'];
-      
-      console.log(refId, status);
-      if (refId == walletAddressRef.current) {
-        if (status === 'created')
-        continue;
-        if (status === 'approved') {
-          verifyRef.current = true;
-          setStatus(status);
-          break;
-        }
-        else {
-          verifyRef.current=false;
-          setStatus(status);
-        }
-      }
-      else {
-        setVerify(false);
-      }
-    }
-  })
-  .catch(err => console.error(err));
   }
 
-  const hasToken=async() => {
- try{const signer = await getProviderOrSigner(true);
-    const contract = new Contract(UID_CONTRACT_ADDRESS, abi, signer);
-    const flag = await contract.hasToken();
-    setToken(flag);
-   console.log(token, "===Token");
- } catch (e) { console.error(e) }
-  }
-    const connectWallet = async () => {
+  const isVerified = async () => {
     try {
-      // Get the provider from web3Modal, wh  ich in our case is MetaMask
-      // When used for the first time, it prompts the user to connect their wallet
-      await signData();
+      const res = await fetch(`http://localhost:5000/isVerified/${walletAddressRef.current}`);
+      const data = await res.json();
+      verifyRef.current = data.verified;
+      return data.verified;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
+  }
+
+  const hasToken = async () => {
+    try {
+      const signer = await getProviderOrSigner(true);
+      const contract = new Contract(UID_CONTRACT_ADDRESS, abi, signer);
+      const flag = await contract.hasToken();
+      setToken(flag);
+      return flag;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
+  }
+
+  const connectWallet = async () => {
+    try {
+      setLoadingMessage("Connecting to wallet...");
+      setLoading(true);
+      
+      await getProviderOrSigner();
       setWalletConnected(true);
       
+      // Check verification and token status
+      await isVerified();
+      await hasToken();
+      
+      showNotification("Wallet connected successfully!", "success");
     } catch (err) {
       console.error(err);
+      showNotification("Failed to connect wallet", "error");
+    } finally {
+      setLoading(false);
     }
-      setLoading(false)
   };
-const getProviderOrSigner = async (needSigner = false) => {
-    // Connect to Metamask
-    // Since we store `web3Modal` as a reference, we need to access the `current` value to get access to the underlying object
-  try{  const provider = await web3ModalRef.current.connect();
-    const web3Provider = new providers.Web3Provider(provider);
+
+  const showNotification = (message, type) => {
+    const notification = document.getElementById("notification");
+    notification.textContent = message;
+    notification.className = `notification ${type}`;
+    notification.style.display = "block";
     
-    // If user is not connected to the Goerli network, let them know and throw an error
-    const { chainId } = await web3Provider.getNetwork();
-    if (chainId !== 80001) {
-      window.alert("Change the network to Polygon");
-      throw new Error("Change network to Polygon");
-    }
-  
+    setTimeout(() => {
+      notification.style.display = "none";
+    }, 3000);
+  };
+
+  const getProviderOrSigner = async (needSigner = false) => {
+    try {
+      const provider = await web3ModalRef.current.connect();
+      const web3Provider = new providers.Web3Provider(provider);
+      
+      const { chainId } = await web3Provider.getNetwork();
+      if (chainId !== 97) {
+        showNotification("Please switch to Polygon network", "error");
+        throw new Error("Change network to Polygon");
+      }
+    
       const signer = web3Provider.getSigner();
-    walletAddressRef.current=(await signer.getAddress());
-    if (needSigner) {
-      return signer;
+      walletAddressRef.current = await signer.getAddress();
+      
+      // Check if user is admin
+      const contract = new Contract(UID_CONTRACT_ADDRESS, abi, signer);
+      const ownerAddress = await contract.owner();
+      setIsAdmin(ownerAddress.toLowerCase() === walletAddressRef.current.toLowerCase());
+      
+      if (needSigner) {
+        return signer;
+      }
+      return web3Provider;
+    } catch (e) {
+      console.error(e);
+      throw e;
     }
-    return web3Provider;
-  } catch (e) {
-    console.log('------------------------------------');
-    console.log(e);
-    console.log('------------------------------------');
-    }
-};
-  
-
-  
-  
-
-  const clearInput = () => {
-    var tags = document.getElementsByClassName('clear');
-    for(var i=0; i< tags.length; i++){
-    tags[i].value = "";
-}
-
-  }
-
+  };
 
   useEffect(() => {
     if (!walletConnected) {
-            web3ModalRef.current = new Web3Modal({
-        network: "goerli",
+      web3ModalRef.current = new Web3Modal({
+        network: "testnet",
         providerOptions: {},
         disableInjectedProvider: false,
-            });
-      setLoading(true);
-      connectWallet()
-      isVerified();
-      hasToken();
-      // getRewards();
-      // getFixedAPY();
-
+      });
+      connectWallet();
     }
-    
-  },[walletConnected]);
-  
-  
-
-
-
+  }, [walletConnected]);
 
   return (
+    <>
+      <Navbar {...{connectWallet,walletConnected, walletAddress: walletAddressRef.current}} />
+    <div className="uid-container">
 
-    <div className="container">
-     
-      <div class="left-side">
-        {
-          loading?"loading":token?<h4 >Verified and Soulbound Token Minted</h4>:verifyRef.current?<button onClick={mintToken}>mint Soulbound token</button>:<Auth value={walletAddressRef}></Auth>
-        }
-        <h4><b>Verification Status:</b> {status}</h4>
-    <div class="details">
+      <div id="notification" className="notification"></div>
+      
+      {loading ? (
+        <div className="loader-container">
+          <div className="loader"></div>
+          <p>{loadingMessage}</p>
         </div>
-      
-      </div>
-      
-      <div class="right-side">
-        <div>
-          <div class="input-bar">
-               <label>WhiteList Address </label>
-            <input type="text" placeholder="address" onChange={(e) => { setAddress(e.target.value) }} className="clear" />
-        <button type="submit" onClick={whitelistAddress} >WhiteList Address</button>
+      ) : (
+        <>
+          <div className="header">
+            <h1>Soulbound Identity Verification</h1>
+            <div className="wallet-info">
+              {/* {walletConnected && (
+                <div className="address-pill">
+                  <div className="address-icon"></div>
+                  <span className="address-text">
+                    {walletAddressRef.current?.slice(0, 6)}...{walletAddressRef.current?.slice(-4)}
+                  </span>
+                </div>
+              )} */}
+              {!walletConnected && (
+                <button className="connect-wallet-btn" onClick={connectWallet}>
+                  Connect Wallet
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="content-container">
+            <div className="verification-section">
+              {token ? (
+                <div className="success-container">
+                  <div className="success-icon">✓</div>
+                  <h2>Verification Complete</h2>
+                  <p>You have successfully verified your identity and minted your soulbound token!</p>
+                </div>
+              ) : verifyRef.current ? (
+                <div className="mint-container">
+                  <h2>Identity Verified</h2>
+                  <p>Your identity has been verified. You can now mint your soulbound token.</p>
+                  <button className="mint-btn" onClick={mintToken}>
+                    Mint Soulbound Token
+                  </button>
+                </div>
+              ) : (
+                <Auth value={walletAddressRef} />
+              )}
+            </div>
             
+            {isAdmin && (
+              <div className="admin-section">
+                <div className="admin-card">
+                  <h2>Admin Controls</h2>
+                  <p>As the contract owner, you can whitelist addresses.</p>
+                  
+                  <div className="input-group">
+                    <input
+                      type="text"
+                      value={address}
+                      placeholder="Enter address to whitelist"
+                      onChange={(e) => setAddress(e.target.value)}
+                    />
+                    <button className="whitelist-btn" onClick={whitelistAddress}>
+                      Whitelist Address
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
       </div>
-          
-        </div>
-  </div>
-    </div>
+    </>
   );
 }
+
 export default Uid;

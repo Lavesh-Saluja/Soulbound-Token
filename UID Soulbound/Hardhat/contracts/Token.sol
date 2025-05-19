@@ -9,3 +9,5 @@ contract Token is ERC20{
         _mint(msg.sender, 50*10**18);
     }
 }
+
+// 0x1caAF2e5ead96c7123550E5D02C84a73fb273626

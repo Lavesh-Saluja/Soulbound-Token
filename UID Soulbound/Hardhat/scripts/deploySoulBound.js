@@ -10,12 +10,12 @@ async function main() {
   const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
   const SupplyChainContract = await hre.ethers.getContractFactory("SoulBound");
-  const tokenAddress = "0x1B9C02eBD8eb81464d2C262C5Dddd316c867BB0f";
+  const tokenAddress = "0x03e959AE496E90bEEa633e5A207d2fB194bc1eD8";
   const uri = "https://ipfs.io/ipfs/QmWiiXXcPp7MzGHouXZV4f1j5irfwq3BZrNjP8B253p8Zz/";
   const contract = await SupplyChainContract.deploy(tokenAddress,uri);
   await contract.deployed();
-    console.log("Contract Address", contract.address);//0x2b434e1BA5feC41F0735eD97a1FBf5aBdfCF19CC
-    console.log("Sleeping.....");
+    console.log("Contract Address", contract.address);//0x1290eB2fB1a9aD6744a27031A5E7D22ABe3E206F
+    console.log("Verifying.....");
   // Wait for etherscan to notice that the contract has been deployed
   await sleep(40000);
 

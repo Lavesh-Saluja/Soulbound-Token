@@ -6,18 +6,18 @@ require("dotenv").config({ path: ".env" });
 
 const QUICKNODE_HTTP_URL = process.env.URL;
 const PRIVATE_KEY = process.env.KEY;
-const POLYGON_KEY = process.env.POLYGON_KEY;
+const BSC_KEY = process.env.BSC_KEY;
 
 module.exports = {
   solidity: "0.8.15",
   networks: {
-    polygonTestnet: {
+    testnet: {
       url: QUICKNODE_HTTP_URL,
       accounts: [PRIVATE_KEY],
     },
   },
 
   etherscan: {
-    apiKey: POLYGON_KEY,
+    apiKey: BSC_KEY,
   },
 };

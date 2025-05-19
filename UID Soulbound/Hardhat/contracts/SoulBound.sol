@@ -2,7 +2,7 @@
 pragma solidity ^0.8.15;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/utils/Counters.sol"; 
+import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract SoulBound is  ERC721URIStorage{
@@ -12,21 +12,29 @@ contract SoulBound is  ERC721URIStorage{
 
     Counters.Counter private _tokenIdCounter;
     mapping(address => bool) public whitelistedAddresses;//whitlisted Address to mint token
-    mapping(address => bool) public tokenMintedAddress;//address which have already minted token 
+    mapping ( address => bool ) public tokenMintedAddress; // address which have already minted token
     event Attest(address indexed to, uint256 indexed tokenId);
     event Revoke(address indexed to, uint256 indexed tokenId);
     IERC20 token;
     constructor(address tokenAddress,string memory _uri) ERC721("SoulBound Token", "SBT") {
-        owner=msg.sender;
+        owner = msg.sender;
      token = IERC20(tokenAddress);
-     uri=_uri;
+     uri = _uri;
+    }
+
+    function updateUri(string memory newUri)public onlyOwner{
+        uri = newUri;
+        uint256 tokenId = _tokenIdCounter.current();
+        for(uint i = 0;i<tokenId;i++){
+             _setTokenURI(i, newUri);
+        }
     }
     function addToWhiteList(address _add)public onlyOwner{
         require(!whitelistedAddresses[_add], "Sender has already been whitelisted");
          whitelistedAddresses[_add] = true;
     }
     modifier onlyOwner(){
-        require(msg.sender==owner,"Not the owner");
+        require(msg.sender==owner,"Not the sa");
         _;
     }
     modifier onlyWhitelistedUser(){
@@ -39,13 +47,12 @@ contract SoulBound is  ERC721URIStorage{
     //     _;
     // }
     function safeMint() public onlyWhitelistedUser  {
-         whitelistedAddresses[msg.sender]=false;
-         tokenMintedAddress[msg.sender]=true;
+         whitelistedAddresses[msg.sender] = false;
+         tokenMintedAddress[msg.sender] = true;
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(msg.sender, tokenId);
         _setTokenURI(tokenId, uri);
-       
     }
 
     function burn(uint256 tokenId) external {
@@ -81,7 +88,7 @@ contract SoulBound is  ERC721URIStorage{
         return tokenMintedAddress[msg.sender];
     }
     function changeOwner(address _owner)public onlyOwner{
-        owner=_owner;
+        owner = _owner;
     }
 }
 

@@ -12,8 +12,8 @@ async function main() {
   const SupplyChainContract=await hre.ethers.getContractFactory("Token");
   const contract = await SupplyChainContract.deploy();
   await contract.deployed();
-    console.log("Contract Address", contract.address);//0x1B9C02eBD8eb81464d2C262C5Dddd316c867BB0f
-    console.log("Sleeping.....");
+    console.log("Contract Address", contract.address);//0x03e959AE496E90bEEa633e5A207d2fB194bc1eD8
+    console.log("Verifying...");
   // Wait for etherscan to notice that the contract has been deployed
   await sleep(40000);
 
